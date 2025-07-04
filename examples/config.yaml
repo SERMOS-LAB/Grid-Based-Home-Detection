@@ -1,0 +1,22 @@
+# Example configuration for Grid-Based Home Detection
+# Save as config.yaml and edit as needed
+
+# Input GPX file
+input_gpx: data.gpx
+
+# Output files
+output_csv: results.csv
+output_plot: results.png
+output_map: results.html
+
+# Grid-based algorithm parameters
+grid_size: 20         # meters
+night_start: 22       # hour (22 = 10pm)
+night_end: 6          # hour (6 = 6am)
+
+# Plotting options
+plot_basemap: false   # true to add OSM basemap (requires contextily)
+interactive_map: true # true to create folium map
+
+# Validation/ground truth (optional)
+groundtruth_csv: groundtruth.csv 
