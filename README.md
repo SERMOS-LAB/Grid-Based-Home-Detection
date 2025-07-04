@@ -2,19 +2,6 @@
 
 This project is an open-source, modular Python package for detecting home locations from mobile GPS data, with a focus on grid-based algorithms. It is designed for urban data science research and reproducibility, inspired by OSMnx and targeting publication in Computers, Environment and Urban Systems (CEUS).
 
-## Goals
-- Modular, reusable, and extensible Python package
-- Input: GPX files (standard GPS data)
-- Core: Grid-based home detection algorithm
-- Open-source, well-documented, and reproducible
-- Easy to use via CLI and as a library
-- Ready for validation, benchmarking, and publication
-
-## Status
-This repository is being refactored for modularity and open science best practices. See `Plan.md` and `Log.md` for details.
-
----
-
 ## Command-Line Interface (CLI)
 
 You can run the full pipeline from the command line using the Typer-based CLI:
