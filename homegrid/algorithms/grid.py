@@ -2,6 +2,7 @@ import pandas as pd
 from typing import Tuple, Dict, Any
 from homegrid.preprocessing.projection import project_coordinates
 from homegrid.preprocessing.time import extract_time_features
+from homegrid.utils import validate_input_dataframe
 import numpy as np
 from pyproj import Transformer
 
@@ -17,6 +18,7 @@ class GridHomeDetector:
         ...     'lon': [-104.8, -104.8, -104.8001],
         ...     'timestamp': ['2024-07-01T23:30:00', '2024-07-02T01:00:00', '2024-07-02T02:00:00']
         ... })
+        >>> df['timestamp'] = pd.to_datetime(df['timestamp'])
         >>> detector = GridHomeDetector(grid_size=20, night_start=22, night_end=6)
         >>> home_lat, home_lon, stats = detector.fit(df)
         >>> print(home_lat, home_lon, stats)
@@ -38,6 +40,7 @@ class GridHomeDetector:
             - home_lat, home_lon: geographic coordinates (WGS84)
             - stats_dict: includes projected coordinates and other stats
         """
+        validate_input_dataframe(df)
         if df.empty or not {'lat', 'lon', 'timestamp'}.issubset(df.columns):
             return np.nan, np.nan, {'num_nights': 0, 'num_points': 0, 'reason': 'empty or missing columns'}
 

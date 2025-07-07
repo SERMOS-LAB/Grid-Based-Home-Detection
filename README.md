@@ -1,6 +1,14 @@
 # Grid-Based Home Detection
 
-This project is an open-source, modular Python package for detecting home locations from mobile GPS data, with a focus on grid-based algorithms. It is designed for urban data science research and reproducibility, inspired by OSMnx and targeting publication in Computers, Environment and Urban Systems (CEUS).
+This project is an open-source, modular Python package for detecting home locations from mobile GPS data, with a focus on grid-based algorithms.
+
+## Input Data Requirements
+
+- The current GPX parser is tailored to a specific format (tested with Gravy data) and may not work with all GPX files.
+- Input data (GPX or DataFrame) **must** have the following columns and types:
+  - `timestamp` (datetime, e.g., `2024-07-01T23:00:00`)
+  - `lat` (float)
+  - `lon` (float)
 
 ## Command-Line Interface (CLI)
 
