@@ -3,8 +3,7 @@
 import typer
 from typing import Optional
 from homegrid.config import load_config, merge_config
-from homegrid.io.gpx import read_gpx
-from homegrid.algorithms.grid import GridHomeDetector
+from homegrid.detector import HomeDetector
 from homegrid.plot import plot_full_result, plot_interactive_map
 from homegrid.validation.groundtruth import load_groundtruth_csv, compare_predictions_to_groundtruth
 from homegrid.validation.metrics import compute_accuracy_metrics
@@ -30,34 +29,30 @@ defaults = {
 @app.command()
 def detect(
     config: Optional[str] = typer.Option(None, help="Path to config file (YAML/JSON)"),
-    input_gpx: Optional[str] = typer.Option(None, help="Input GPX file"),
+    input_gpx: Optional[str] = typer.Option(None, help="Input GPX file or folder or CSV"),
     output_csv: Optional[str] = typer.Option(None, help="Output CSV for results"),
     grid_size: Optional[int] = typer.Option(None, help="Grid size in meters"),
     night_start: Optional[int] = typer.Option(None, help="Night start hour (22=10pm)"),
     night_end: Optional[int] = typer.Option(None, help="Night end hour (6=6am)"),
 ):
     """
-    Run grid-based home detection and save results.
+    Run grid-based home detection and save results. Uses the new HomeDetector workflow.
     """
+    # --- New workflow using HomeDetector ---
     file_config = load_config(config) if config else {}
     cli_args = locals()
     config_all = merge_config(defaults, file_config, cli_args)
-    df = read_gpx(config_all['input_gpx'])
-    detector = GridHomeDetector(
-        grid_size=config_all['grid_size'],
-        night_start=config_all['night_start'],
-        night_end=config_all['night_end']
-    )
-    home_lat, home_lon, stats = detector.fit(df)
-    results = pd.DataFrame([{
-        'user_id': 1,  # single user for now
-        'lat': home_lat,
-        'lon': home_lon,
-        **stats
-    }])
-    results.to_csv(config_all['output_csv'], index=False)
-    typer.echo(f"Saved results to {config_all['output_csv']}")
-    typer.echo(f"Home location: {home_lat}, {home_lon}")
+    # Set input_file in config for HomeDetector
+    config_all['input_file'] = config_all.get('input_gpx')
+    config_all['output_file'] = config_all.get('output_csv')
+    detector = HomeDetector(config_all)
+    detector.load_data().preprocess_data().detect_homes()
+    results = detector.get_results()
+    output_path = config_all['output_csv']
+    results.to_csv(output_path, index=False)
+    typer.echo(f"Saved results to {output_path}")
+    if 'lat' in results.columns and 'lon' in results.columns:
+        typer.echo(f"Home locations:\n{results[['user_id','lat','lon']]}")
 
 @app.command()
 def plot(

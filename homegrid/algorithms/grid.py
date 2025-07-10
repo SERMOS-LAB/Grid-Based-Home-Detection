@@ -93,4 +93,51 @@ class GridHomeDetector:
             'prj_lat': float(prj_home_lat),
             'prj_lon': float(prj_home_lon)
         }
-        return home_lat, home_lon, stats 
+        return home_lat, home_lon, stats
+
+def grid_based_batch(gdf, grid_size=20, night_start=22, night_end=6, user_id_col='user_id', epsg_in=4326, epsg_out=32617):
+    """
+    Applies the grid-based home detection algorithm to a batch of users.
+    Args:
+        gdf (GeoDataFrame): Preprocessed and projected GeoDataFrame with a user ID column.
+        grid_size (int): The grid size in meters.
+        night_start (int): Night start hour.
+        night_end (int): Night end hour.
+        user_id_col (str): The name of the user identifier column.
+        epsg_in (int): Input EPSG code.
+        epsg_out (int): Output EPSG code.
+    Returns:
+        DataFrame: One row per user with inferred home location and stats.
+    """
+    from homegrid.utils import validate_input_dataframe
+    results = []
+    for user_id, user_df in gdf.groupby(user_id_col):
+        # Convert to DataFrame for compatibility
+        user_df = user_df.copy()
+        # Validate and ensure required columns
+        try:
+            validate_input_dataframe(user_df)
+        except Exception as e:
+            results.append({
+                user_id_col: user_id,
+                'lat': None,
+                'lon': None,
+                'error': str(e)
+            })
+            continue
+        detector = GridHomeDetector(
+            grid_size=grid_size,
+            night_start=night_start,
+            night_end=night_end,
+            epsg_in=epsg_in,
+            epsg_out=epsg_out
+        )
+        home_lat, home_lon, stats = detector.fit(user_df)
+        row = {
+            user_id_col: user_id,
+            'lat': home_lat,
+            'lon': home_lon,
+            **stats
+        }
+        results.append(row)
+    return pd.DataFrame(results) 

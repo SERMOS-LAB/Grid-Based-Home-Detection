@@ -3,6 +3,8 @@ from typing import Optional
 import gpxpy
 import gpxpy.gpx
 from datetime import datetime
+import geopandas as gpd
+import pathlib
 
 
 def read_gpx(filepath: str) -> pd.DataFrame:
@@ -64,6 +66,73 @@ def read_gpx(filepath: str) -> pd.DataFrame:
         if col not in df.columns:
             df[col] = None
     return df
+
+
+def read_gpx_folder_to_geodf(folder_path, user_id_col='user_id'):
+    """
+    Reads a folder of GPX files, treating each file as a separate user.
+    Returns a GeoDataFrame with a user_id column.
+    Args:
+        folder_path (str or Path): Path to folder containing GPX files.
+        user_id_col (str): Name of the user ID column.
+    Returns:
+        GeoDataFrame with all points and user_id.
+    """
+    folder = pathlib.Path(folder_path)
+    all_points = []
+    user_files = list(folder.glob("*.gpx"))
+    for gpx_file in user_files:
+        df = read_gpx(str(gpx_file))
+        if not df.empty:
+            df[user_id_col] = gpx_file.stem
+            all_points.append(df)
+    if not all_points:
+        return gpd.GeoDataFrame(columns=['timestamp', 'lat', 'lon', 'ele', 'name', 'desc', user_id_col, 'geometry'], crs="EPSG:4326")
+    df_all = pd.concat(all_points, ignore_index=True)
+    gdf = gpd.GeoDataFrame(
+        df_all,
+        geometry=gpd.points_from_xy(df_all['lon'], df_all['lat']),
+        crs="EPSG:4326"
+    )
+    return gdf
+
+
+def read_data(input_path, user_id_col='user_id', lat_col='lat', lon_col='lon'):
+    """
+    Generic data reader for CSV, single GPX, or folder of GPX files.
+    Returns a GeoDataFrame with a user_id column.
+    Args:
+        input_path (str): Path to file or folder.
+        user_id_col (str): Name of user ID column.
+        lat_col (str): Latitude column name (for CSV).
+        lon_col (str): Longitude column name (for CSV).
+    Returns:
+        GeoDataFrame with user_id column.
+    """
+    path = pathlib.Path(input_path)
+    if path.is_dir():
+        return read_gpx_folder_to_geodf(path, user_id_col=user_id_col)
+    elif path.suffix.lower() == '.gpx':
+        df = read_gpx(str(path))
+        df[user_id_col] = path.stem
+        gdf = gpd.GeoDataFrame(
+            df,
+            geometry=gpd.points_from_xy(df['lon'], df['lat']),
+            crs="EPSG:4326"
+        )
+        return gdf
+    elif path.suffix.lower() in ['.csv', '.txt']:
+        df = pd.read_csv(str(path))
+        if user_id_col not in df.columns:
+            df[user_id_col] = 1  # fallback for single-user CSV
+        gdf = gpd.GeoDataFrame(
+            df,
+            geometry=gpd.points_from_xy(df[lon_col], df[lat_col]),
+            crs="EPSG:4326"
+        )
+        return gdf
+    else:
+        raise ValueError(f"Unsupported file type or path: {input_path}")
 
 
 if __name__ == '__main__':
