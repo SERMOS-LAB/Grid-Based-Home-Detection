@@ -105,4 +105,4 @@ If you use GHOST in your research, please cite:
 
 ---
 
-For full API documentation and examples, see the [online documentation](docs/build/html/index.html) or the `docs/` directory.
+For full API documentation and examples, see the `docs/` directory.
