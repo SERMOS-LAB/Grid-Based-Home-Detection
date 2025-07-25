@@ -1,7 +1,7 @@
 [project]
-name = "grid-based-home-detection"
+name = "ghost"
 version = "0.1.0"
-description = "Modular Python package for detecting home locations from mobile GPS data using grid-based algorithms. Inspired by OSMnx."
+description = "GHOST: Grid-based Home detection via Stay-Time (GHOST) - an open-source Python package for home location detection from mobile GPS data."
 authors = [
     { name = "Mustafa Sameen", email = "mustafasameen@ufl.edu" }
 ]

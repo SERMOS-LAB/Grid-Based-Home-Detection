@@ -1,14 +1,15 @@
 import geopandas as gpd
 import pandas as pd
-from homegrid.io.gpx import read_data
-from homegrid.preprocessing.projection import project_coordinates
-from homegrid.preprocessing.time import extract_time_features
-from homegrid.algorithms.grid import GridHomeDetector, grid_based_batch
-from homegrid.config import load_config
+from ghost.io.gpx import read_data
+from ghost.preprocessing.projection import project_coordinates
+from ghost.preprocessing.time import extract_time_features
+from ghost.algorithms.grid import GridHomeDetector, grid_based_batch
+from ghost.config import load_config
 
+# GHOST.detector: High-level workflow for the GHOST algorithm
 class HomeDetector:
     """
-    High-level class to detect home locations from GPS data (single-user or batch).
+    High-level class to detect home locations from GPS data (single-user or batch) using the GHOST algorithm.
 
     Initialization supports three modes:
     1. No arguments: uses defaults.
@@ -17,14 +18,15 @@ class HomeDetector:
     4. Mixing config and kwargs: kwargs take precedence.
 
     Example:
+        >>> from ghost.detector import HomeDetector
         >>> detector = HomeDetector(grid_size=100)
-        >>> detector = HomeDetector(config={'grid_size': 50, 'night_start': 21})
-        >>> detector = HomeDetector(config={'grid_size': 50}, grid_size=100)
-        >>> detector = HomeDetector.from_config_file('config.yaml')
+        >>> detector.load_data().preprocess_data().detect_homes()
+        >>> results = detector.get_results()
+        >>> print(results)
     """
     def __init__(self, config=None, **kwargs):
         """
-        Initializes the detector. 
+        Initializes the GHOST detector. 
         Loads parameters from defaults, then config dict, then direct keyword arguments.
         Args:
             config (dict, optional): A dictionary of parameters.
@@ -45,14 +47,26 @@ class HomeDetector:
         return cls(config, **kwargs)
 
     def load_data(self):
-        """Loads and validates input data as a GeoDataFrame."""
+        """
+        Loads and validates input data as a GeoDataFrame for GHOST.
+
+        Returns:
+            self: Enables method chaining.
+
+        Example:
+            >>> detector = HomeDetector(input_file='data.gpx')
+            >>> detector.load_data()
+            >>> print(detector.raw_data.head())
+        """
         input_path = self.config.get('input_file')
         user_id_col = self.config.get('user_id_column', 'user_id')
         self.raw_data = read_data(input_path, user_id_col=user_id_col)
         return self
 
     def preprocess_data(self):
-        """Projects coordinates and extracts time features."""
+        """
+        Projects coordinates and extracts time features for GHOST.
+        """
         gdf = self.raw_data.copy()
         # Project coordinates
         epsg_in = self.config.get('epsg_in', 4326)
@@ -66,7 +80,21 @@ class HomeDetector:
         return self
 
     def detect_homes(self, algorithm='grid'):
-        """Runs the selected home detection algorithm (single or batch)."""
+        """
+        Runs the selected GHOST home detection algorithm (single or batch).
+
+        Args:
+            algorithm (str): Algorithm to use ('grid' supported).
+
+        Returns:
+            self: Enables method chaining. Results are available via get_results().
+
+        Example:
+            >>> detector = HomeDetector(input_file='data.gpx')
+            >>> detector.load_data().preprocess_data().detect_homes()
+            >>> results = detector.get_results()
+            >>> print(results)
+        """
         algo = algorithm or self.config.get('algorithm', 'grid')
         user_id_col = self.config.get('user_id_column', 'user_id')
         grid_size = self.config.get('grid_size', 20)
@@ -106,7 +134,12 @@ class HomeDetector:
         return self
 
     def get_results(self):
-        """Returns the final DataFrame of home locations."""
+        """
+        Returns the final DataFrame of home locations from GHOST.
+
+        Returns:
+            pandas.DataFrame: Home location results with user_id, lat, lon, and stats columns.
+        """
         return self.results
 
     def _get_default_config(self):

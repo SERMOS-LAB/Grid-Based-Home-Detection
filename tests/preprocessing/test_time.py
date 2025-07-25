@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from homegrid.preprocessing.time import extract_time_features
+from ghost.preprocessing.time import extract_time_features
 
 def test_extract_time_features_basic():
     df = pd.DataFrame({'timestamp': pd.to_datetime(['2024-07-01T23:00:00', '2024-07-02T08:15:00'])})

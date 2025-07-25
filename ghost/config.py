@@ -1,4 +1,4 @@
-# homegrid.config: Configuration management
+# GHOST.config: Configuration management for the GHOST algorithm
 
 import json
 from typing import Any, Dict
@@ -11,7 +11,7 @@ except ImportError:
 
 def load_config(path: str) -> Dict[str, Any]:
     """
-    Load configuration from a YAML or JSON file.
+    Load configuration for the GHOST algorithm from a YAML or JSON file.
     Args:
         path: Path to config file (YAML or JSON).
     Returns:
@@ -34,7 +34,7 @@ def load_config(path: str) -> Dict[str, Any]:
 
 def merge_config(defaults: Dict[str, Any], file_config: Dict[str, Any], cli_args: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Merge default, file, and CLI config dictionaries (CLI > file > defaults).
+    Merge default, file, and CLI config dictionaries for GHOST (CLI > file > defaults).
     Args:
         defaults: Default config dict.
         file_config: Config loaded from file.

@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from homegrid.algorithms.grid import GridHomeDetector, grid_based_batch
+from ghost.algorithms.grid import GridHomeDetector, grid_based_batch
 import geopandas as gpd
 
 def test_grid_home_detector_basic():
@@ -30,6 +30,43 @@ def test_grid_home_detector_empty():
     assert np.isnan(home_lon)
     assert stats['num_nights'] == 0
     assert stats['num_points'] == 0 
+
+def test_grid_home_detector_weekend_fallback():
+    # All points are on weekend daytime, none at night
+    df = pd.DataFrame({
+        'lat': [38.9, 38.9, 38.9001],
+        'lon': [-104.8, -104.8, -104.8001],
+        'timestamp': [
+            '2024-07-06T10:00:00',  # Saturday
+            '2024-07-06T12:00:00',
+            '2024-07-07T15:00:00'   # Sunday
+        ]
+    })
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    detector = GridHomeDetector(grid_size=20, night_start=22, night_end=6)
+    home_lat, home_lon, stats = detector.fit(df)
+    assert not np.isnan(home_lat)
+    assert not np.isnan(home_lon)
+    assert stats['inferred_from'] == 'weekend'
+    assert stats['num_points'] == 3
+    assert stats['stay_time'] > 0
+
+def test_grid_home_detector_stay_time():
+    # Points in one cell, check stay_time calculation
+    df = pd.DataFrame({
+        'lat': [38.9, 38.9, 38.9],
+        'lon': [-104.8, -104.8, -104.8],
+        'timestamp': [
+            '2024-07-01T23:00:00',
+            '2024-07-01T23:30:00',
+            '2024-07-02T00:00:00'
+        ]
+    })
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
+    detector = GridHomeDetector(grid_size=20, night_start=22, night_end=6)
+    home_lat, home_lon, stats = detector.fit(df)
+    assert stats['stay_time'] == 3600.0  # 1 hour in seconds
+    assert stats['inferred_from'] == 'night'
 
 def test_grid_based_batch():
     # Two users, each with points

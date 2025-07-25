@@ -6,7 +6,7 @@ Usage:
 
 Make sure you have installed all dependencies (see pyproject.toml) and that your input file (data.gpx, data_folder/, or data.csv) is present in the project root.
 """
-from homegrid.detector import HomeDetector
+from ghost.detector import HomeDetector
 
 # 1. Using defaults (will not run unless you set input_file in config)
 print("--- HomeDetector with defaults (will fail unless input_file is set) ---")

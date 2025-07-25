@@ -2,7 +2,7 @@ import os
 import tempfile
 import json
 import pytest
-from homegrid.config import load_config, merge_config
+from ghost.config import load_config, merge_config
 
 try:
     import yaml

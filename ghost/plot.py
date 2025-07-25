@@ -1,4 +1,4 @@
-# homegrid.plot: Visualization utilities
+# GHOST.plot: Visualization utilities for the GHOST algorithm
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -23,7 +23,7 @@ def plot_tracks(df):
 
 def plot_gps_points(df: pd.DataFrame, ax: Optional[plt.Axes] = None, color: str = 'blue', alpha: float = 0.5, s: int = 10, basemap: bool = False, crs: str = 'epsg:4326', **kwargs):
     """
-    Plot GPS points using matplotlib. Optionally add a basemap (requires contextily and projected CRS).
+    Plot GPS points using matplotlib for the GHOST algorithm. Optionally add a basemap (requires contextily and projected CRS).
     Args:
         df: DataFrame with 'lat' and 'lon' columns.
         ax: Optional matplotlib Axes.
@@ -54,7 +54,7 @@ def plot_gps_points(df: pd.DataFrame, ax: Optional[plt.Axes] = None, color: str 
 
 def plot_home_location(ax: plt.Axes, home_lat: float, home_lon: float, color: str = 'red', marker: str = 'X', label: str = 'Home', **kwargs):
     """
-    Overlay the inferred home location on a matplotlib plot.
+    Overlay the inferred home location (from GHOST) on a matplotlib plot.
     Args:
         ax: Matplotlib Axes.
         home_lat: Latitude of home.
@@ -73,7 +73,7 @@ def plot_home_location(ax: plt.Axes, home_lat: float, home_lon: float, color: st
 
 def plot_full_result(df: pd.DataFrame, home_lat: float, home_lon: float, gt_lat: Optional[float] = None, gt_lon: Optional[float] = None, basemap: bool = False, crs: str = 'epsg:4326', save_path: Optional[str] = None):
     """
-    Plot GPS points, inferred home, and optionally ground truth on a map.
+    Plot GPS points, inferred home (from GHOST), and optionally ground truth on a map.
     Args:
         df: DataFrame with 'lat' and 'lon'.
         home_lat, home_lon: Inferred home location.
@@ -98,7 +98,7 @@ def plot_full_result(df: pd.DataFrame, home_lat: float, home_lon: float, gt_lat:
 
 def plot_interactive_map(df: pd.DataFrame, home_lat: float, home_lon: float, gt_lat: Optional[float] = None, gt_lon: Optional[float] = None, zoom_start: int = 14) -> Optional['folium.Map']:
     """
-    Create an interactive map with folium showing GPS points, inferred home, and optionally ground truth.
+    Create an interactive map with folium showing GPS points, inferred home (from GHOST), and optionally ground truth.
     Args:
         df: DataFrame with 'lat' and 'lon'.
         home_lat, home_lon: Inferred home location.

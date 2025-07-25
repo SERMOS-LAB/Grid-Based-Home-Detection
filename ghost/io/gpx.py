@@ -7,10 +7,10 @@ import geopandas as gpd
 import pathlib
 
 
+# GHOST.io.gpx: GPX and data reading utilities for the GHOST algorithm
 def read_gpx(filepath: str) -> pd.DataFrame:
     """
-    Parse a GPX file and return a DataFrame with columns:
-    ['timestamp', 'lat', 'lon', 'ele', 'name', 'desc']
+    Parse a GPX file and return a DataFrame for use with the GHOST algorithm.
     Handles waypoints, tracks, and metadata as available.
     Args:
         filepath: Path to the GPX file.
@@ -70,13 +70,20 @@ def read_gpx(filepath: str) -> pd.DataFrame:
 
 def read_gpx_folder_to_geodf(folder_path, user_id_col='user_id'):
     """
-    Reads a folder of GPX files, treating each file as a separate user.
+    Reads a folder of GPX files for GHOST, treating each file as a separate user.
     Returns a GeoDataFrame with a user_id column.
+
     Args:
         folder_path (str or Path): Path to folder containing GPX files.
         user_id_col (str): Name of the user ID column.
+
     Returns:
-        GeoDataFrame with all points and user_id.
+        geopandas.GeoDataFrame: All points with user_id and geometry columns.
+
+    Example:
+        >>> from ghost.io.gpx import read_gpx_folder_to_geodf
+        >>> gdf = read_gpx_folder_to_geodf('my_gpx_folder')
+        >>> print(gdf.head())
     """
     folder = pathlib.Path(folder_path)
     all_points = []
@@ -99,15 +106,24 @@ def read_gpx_folder_to_geodf(folder_path, user_id_col='user_id'):
 
 def read_data(input_path, user_id_col='user_id', lat_col='lat', lon_col='lon'):
     """
-    Generic data reader for CSV, single GPX, or folder of GPX files.
+    Generic data reader for CSV, single GPX, or folder of GPX files for GHOST.
     Returns a GeoDataFrame with a user_id column.
+
     Args:
         input_path (str): Path to file or folder.
         user_id_col (str): Name of user ID column.
         lat_col (str): Latitude column name (for CSV).
         lon_col (str): Longitude column name (for CSV).
+
     Returns:
-        GeoDataFrame with user_id column.
+        geopandas.GeoDataFrame: Data with user_id and geometry columns.
+
+    Example:
+        >>> from ghost.io.gpx import read_data
+        >>> gdf = read_data('data.gpx')
+        >>> print(gdf.head())
+        >>> gdf2 = read_data('my_gpx_folder')
+        >>> print(gdf2['user_id'].unique())
     """
     path = pathlib.Path(input_path)
     if path.is_dir():

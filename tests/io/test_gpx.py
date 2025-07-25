@@ -2,8 +2,8 @@ import os
 import pandas as pd
 import pytest
 
-from homegrid.io.gpx import read_gpx
-from homegrid.io.gpx import read_gpx_folder_to_geodf, read_data
+from ghost.io.gpx import read_gpx
+from ghost.io.gpx import read_gpx_folder_to_geodf, read_data
 import geopandas as gpd
 
 def test_read_gpx_basic():

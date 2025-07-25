@@ -4,7 +4,7 @@ import os
 import pytest
 
 def test_cli_help():
-    result = subprocess.run([sys.executable, '-m', 'homegrid.cli', '--help'], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, '-m', 'ghost.cli', '--help'], capture_output=True, text=True)
     assert result.returncode == 0
     assert 'Usage' in result.stdout or 'usage' in result.stdout
     assert 'detect' in result.stdout
@@ -22,7 +22,7 @@ def test_cli_detect_runs(tmp_path):
     with open(gpx_path, 'w') as f:
         f.write(gpx_content)
     result = subprocess.run([
-        sys.executable, '-m', 'homegrid.cli', 'detect', '--config', str(config_path)
+        sys.executable, '-m', 'ghost.cli', 'detect', '--config', str(config_path)
     ], capture_output=True, text=True, cwd=tmp_path)
     assert result.returncode == 0
     assert 'Saved results' in result.stdout

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for testing
-from homegrid.plot import plot_gps_points, plot_home_location, plot_full_result, plot_interactive_map
+from ghost.plot import plot_gps_points, plot_home_location, plot_full_result, plot_interactive_map
 
 def test_plot_gps_points_runs():
     df = pd.DataFrame({'lat': [38.9, 38.9001], 'lon': [-104.8, -104.8001]})

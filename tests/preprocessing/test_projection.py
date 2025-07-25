@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from homegrid.preprocessing.projection import project_coordinates
+from ghost.preprocessing.projection import project_coordinates
 
 def test_project_coordinates_basic():
     lat = pd.Series([38.9, 39.0])

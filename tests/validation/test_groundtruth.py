@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import tempfile
 import os
-from homegrid.validation.groundtruth import load_groundtruth_csv, compare_predictions_to_groundtruth
+from ghost.validation.groundtruth import load_groundtruth_csv, compare_predictions_to_groundtruth
 
 def test_load_groundtruth_csv(tmp_path):
     # Create a temporary CSV

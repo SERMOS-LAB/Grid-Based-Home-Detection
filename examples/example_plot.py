@@ -6,8 +6,8 @@ Usage:
 
 Requires: matplotlib, folium, contextily (optional for basemap)
 """
-from homegrid.detector import HomeDetector
-from homegrid.plot import plot_full_result, plot_interactive_map
+from ghost.detector import HomeDetector
+from ghost.plot import plot_full_result, plot_interactive_map
 import matplotlib.pyplot as plt
 
 # 1. Run detection using HomeDetector with direct parameters

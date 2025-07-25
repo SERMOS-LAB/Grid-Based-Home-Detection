@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from typing import Dict, Any
-from homegrid.validation.metrics import haversine_distance, compute_accuracy_metrics
+from ghost.validation.metrics import haversine_distance, compute_accuracy_metrics
 
 def load_groundtruth(filepath: str) -> pd.DataFrame:
     """

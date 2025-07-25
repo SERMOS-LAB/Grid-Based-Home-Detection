@@ -1,5 +1,5 @@
 import numpy as np
-from homegrid.validation.metrics import haversine_distance, compute_accuracy_metrics
+from ghost.validation.metrics import haversine_distance, compute_accuracy_metrics
 
 def test_haversine_distance_basic():
     d = haversine_distance(38.9, -104.8, 38.9001, -104.8001)

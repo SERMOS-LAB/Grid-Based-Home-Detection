@@ -7,9 +7,9 @@ Usage:
 This script runs home detection on data.gpx, compares the result to groundtruth.csv,
 and prints validation metrics (mean error, % within 50m, etc).
 """
-from homegrid.detector import HomeDetector
-from homegrid.validation.groundtruth import load_groundtruth_csv, compare_predictions_to_groundtruth
-from homegrid.validation.metrics import compute_accuracy_metrics
+from ghost.detector import HomeDetector
+from ghost.validation.groundtruth import load_groundtruth_csv, compare_predictions_to_groundtruth
+from ghost.validation.metrics import compute_accuracy_metrics
 import pandas as pd
 
 # Validate using direct parameters only
