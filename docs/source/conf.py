@@ -7,11 +7,15 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'Grid-Based Home Detection'
-copyright = '2025, Your Name'
-author = 'Your Name'
+copyright = '2025, Mustafa Sameen'
+author = 'Mustafa Sameen'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
+
+import os
+import sys
+sys.path.insert(0, os.path.abspath('../..'))
 
 extensions = [
     'sphinx.ext.autodoc',

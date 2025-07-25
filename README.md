@@ -26,23 +26,47 @@ This package supports batch processing for multiple users using the GHOST algori
 
 ## Command-Line Interface (CLI)
 
-Run the full pipeline from the command line using the Typer-based CLI for GHOST:
+The GHOST CLI provides an easy way to run detection, plotting, and validation workflows directly from the terminal.
 
+**Available commands:**
+- `detect`: Run the GHOST algorithm for home detection and save results.
+- `plot`: Plot GPS points and home location (static and/or interactive).
+- `validate`: Compare GHOST-predicted home locations to ground truth and print accuracy metrics.
+
+**Show help:**
 ```
-python -m homegrid.cli detect --config examples/config.yaml
-python -m homegrid.cli plot --config examples/config.yaml
-python -m homegrid.cli validate --output-csv results.csv --groundtruth-csv groundtruth.csv
+python -m ghost.cli --help
+python -m ghost.cli detect --help
 ```
 
-Or override any parameter via CLI:
+**Run the full pipeline:**
 ```
-python -m homegrid.cli detect --input-gpx data.gpx --grid-size 30
-python -m homegrid.cli detect --input-gpx data_folder/ --user-id-column user_id
+python -m ghost.cli detect --config examples/config.yaml
+python -m ghost.cli plot --config examples/config.yaml
+python -m ghost.cli validate --output-csv results.csv --groundtruth-csv groundtruth.csv
 ```
+
+**Or override any parameter via CLI:**
+```
+python -m ghost.cli detect --input-gpx data.gpx --grid-size 30
+python -m ghost.cli detect --input-gpx data_folder/ --user-id-column user_id
+```
+
+**Batch and Single-User Support:**
+- The CLI automatically detects if your input is single-user or batch and runs the appropriate workflow.
+- Output and messages are adjusted accordingly.
 
 **Batch Output:**
 - When running in batch mode, the CLI will output a CSV with one row per user, including all stats (e.g., user_id, lat, lon, stay_time, num_nights, inferred_from).
 - The CLI output will indicate batch mode and display user IDs.
+
+**Summary Table:**
+
+| Command   | Purpose                                 | Input Type(s)         | Output                |
+|-----------|-----------------------------------------|-----------------------|-----------------------|
+| detect    | Run home detection                      | GPX, folder, or CSV   | Results CSV           |
+| plot      | Plot results (static/interactive)       | GPX, folder, or CSV   | PNG/HTML plots/maps   |
+| validate  | Validate against ground truth           | Results + groundtruth | Printed metrics       |
 
 ## Configuration
 
@@ -66,10 +90,12 @@ groundtruth_csv: groundtruth.csv
 
 ## Library Usage
 
-Use the GHOST package as a library in Python scripts or notebooks:
+**Unified Workflow:**
+> The same code structure works for both single-user and batch cases for detect, plot, and validate. Simply change the input (single GPX file, folder of GPX files, or CSV with user_id) and the GHOST API and convenience functions will handle both cases automatically.
 
+### Detect (Batch or Single User)
 ```python
-from homegrid.detector import HomeDetector
+from ghost.detector import HomeDetector
 
 # For a folder of GPX files (batch mode)
 detector = HomeDetector(input_file='data_folder/')
@@ -77,9 +103,36 @@ detector.load_data().preprocess_data().detect_homes()
 results = detector.get_results()
 print(results)
 ```
-
 - If your input is a folder of GPX files or a CSV with a `user_id` column, batch processing is triggered automatically.
 - The output DataFrame will have one row per user with all stats.
+
+### Plot Results
+```python
+from ghost.plot import plot_full_result, plot_interactive_map
+
+# Plot static map for the first user
+row = results.iloc[0]
+fig, ax = plot_full_result(detector.raw_data, row['lat'], row['lon'])
+fig.show()
+
+# Plot interactive map (requires folium)
+m = plot_interactive_map(detector.raw_data, row['lat'], row['lon'])
+m.save('map.html')
+```
+
+### Batch Plotting
+```python
+from ghost.plot import plot_batch_results
+
+plot_batch_results(results, detector.raw_data)
+```
+
+### Batch Validation
+```python
+from ghost.validation.groundtruth import batch_validation_report
+
+merged, metrics = batch_validation_report(results, 'groundtruth.csv')
+```
 
 ## Notes
 - All workflows (detection, plotting, validation, batch/single-user) are demonstrated in the `examples/` directory.

@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from typing import Optional
+from typing import Optional, Any
 
 # Optional imports for basemap and interactive
 try:
@@ -96,7 +96,7 @@ def plot_full_result(df: pd.DataFrame, home_lat: float, home_lon: float, gt_lat:
         plt.savefig(save_path, bbox_inches='tight')
     return fig, ax
 
-def plot_interactive_map(df: pd.DataFrame, home_lat: float, home_lon: float, gt_lat: Optional[float] = None, gt_lon: Optional[float] = None, zoom_start: int = 14) -> Optional['folium.Map']:
+def plot_interactive_map(df: pd.DataFrame, home_lat: float, home_lon: float, gt_lat: Optional[float] = None, gt_lon: Optional[float] = None, zoom_start: int = 14) -> Optional[Any]:
     """
     Create an interactive map with folium showing GPS points, inferred home (from GHOST), and optionally ground truth.
     Args:
@@ -123,4 +123,30 @@ def plot_interactive_map(df: pd.DataFrame, home_lat: float, home_lon: float, gt_
     # Plot ground truth
     if gt_lat is not None and gt_lon is not None:
         folium.Marker(location=[gt_lat, gt_lon], icon=folium.Icon(color='green', icon='star'), popup='Ground Truth').add_to(m)
-    return m 
+    return m
+
+def plot_batch_results(results, raw_data, user_id_col='user_id', static_prefix='ghost_plot_', map_prefix='ghost_map_', plot_static=True, plot_interactive=True):
+    """
+    Generate static and/or interactive plots for each user in a batch results DataFrame.
+
+    Args:
+        results (pd.DataFrame): Batch results with one row per user.
+        raw_data (pd.DataFrame or GeoDataFrame): All GPS points, must include user_id_col.
+        user_id_col (str): Column name for user IDs.
+        static_prefix (str): Prefix for static plot PNG files.
+        map_prefix (str): Prefix for interactive map HTML files.
+        plot_static (bool): Whether to generate static plots.
+        plot_interactive (bool): Whether to generate interactive maps.
+    """
+    for _, row in results.iterrows():
+        uid = row[user_id_col]
+        lat = row['lat']
+        lon = row['lon']
+        user_points = raw_data[raw_data[user_id_col] == uid]
+        if plot_static:
+            fig, ax = plot_full_result(user_points, lat, lon)
+            fig.suptitle(f"GHOST Home Detection (User: {uid})")
+            fig.savefig(f"{static_prefix}{uid}.png", bbox_inches='tight')
+        if plot_interactive:
+            m = plot_interactive_map(user_points, lat, lon)
+            m.save(f"{map_prefix}{uid}.html") 
