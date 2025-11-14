@@ -147,7 +147,7 @@ If you use GHOST in your research, please cite:
 ```bibtex
 @misc{recalde2025ghost,
   author = {Alessandra Recalde and Mustafa Sameen and Xiaojian Zhang and Xilei Zhao},
-  title = {DESIGN AND VALIDATION OF A GRID-BASED HOME DETECTION VIA STAY-TIME (GHOST) SOFTWARE FOR MOBILE LOCATION DATA},
+  title = {GHOST: Grid-based Home detection via Stay-Time},
   year = {2025},
   note = {University of Florida},
   howpublished = {\url{https://github.com/SERMOS-LAB/Grid-Based-Home-Detection}},
