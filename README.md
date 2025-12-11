@@ -156,6 +156,10 @@ If you use GHOST in your research, please cite:
 }
 ```
 
+## Acknowledgments
+
+This project is supported by the NSF (No. 2416202, Assessing and Mitigating Spatial Bias of Large-Scale Mobile Location Data for Human Mobility Analysis).
+
 ---
 
 For full API documentation and examples, see the `docs/` directory.
