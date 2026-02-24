@@ -6,6 +6,76 @@ from ghost.utils import validate_input_dataframe
 import numpy as np
 from pyproj import Transformer
 
+
+def densest_bin_centroid(df_sel: pd.DataFrame, latg: float, longg: float, grid_m: float):
+    """
+    Inside the winning grid cell (center at latg/longg), compute home as centroid of points
+    in the sub-bin with the HIGHEST POINT DENSITY PER AREA.
+
+    Returns:
+      (home_prj_lat, home_prj_lon, method_str)
+    with fallbacks:
+      - if too few points -> mean of all points in cell
+      - if empty -> nan
+    """
+    if df_sel.empty or not np.isfinite(latg) or not np.isfinite(longg):
+        return np.nan, np.nan, "empty"
+
+    half = float(grid_m) / 2.0
+    lat_min, lat_max = float(latg) - half, float(latg) + half
+    lon_min, lon_max = float(longg) - half, float(longg) + half
+
+    cell = df_sel[
+        (df_sel["prj_lat"] >= lat_min) & (df_sel["prj_lat"] < lat_max) &
+        (df_sel["prj_lon"] >= lon_min) & (df_sel["prj_lon"] < lon_max)
+    ].copy()
+
+    if cell.empty:
+        return np.nan, np.nan, "empty_cell"
+
+    coords = cell[["prj_lon", "prj_lat"]].to_numpy(dtype=float)  # x,y
+    coords = coords[np.all(np.isfinite(coords), axis=1)]
+    if coords.shape[0] == 0:
+        return np.nan, np.nan, "nonfinite"
+
+    # choose bin size: max(3m, 1/10 grid size) to preserve spatial resolution
+    bin_m = max(3.0, float(grid_m) / 10.0)
+
+    # if very few points, just mean of points in cell
+    if coords.shape[0] < 3:
+        cx = float(np.mean(coords[:, 0]))
+        cy = float(np.mean(coords[:, 1]))
+        return cy, cx, f"mean_cell_points_smallN_bin{bin_m:.2f}"
+
+    # bin indices relative to cell min corner
+    bx = np.floor((coords[:, 0] - lon_min) / bin_m).astype(int)
+    by = np.floor((coords[:, 1] - lat_min) / bin_m).astype(int)
+
+    # clip to valid range
+    max_ix = int(np.floor((lon_max - lon_min) / bin_m))
+    max_iy = int(np.floor((lat_max - lat_min) / bin_m))
+    bx = np.clip(bx, 0, max_ix)
+    by = np.clip(by, 0, max_iy)
+
+    # find densest bin (max count == max density since same area)
+    bins = np.stack([bx, by], axis=1)
+    uniq, counts = np.unique(bins, axis=0, return_counts=True)
+    best_bin = uniq[np.argmax(counts)]
+    best_bx, best_by = int(best_bin[0]), int(best_bin[1])
+
+    in_best = (bx == best_bx) & (by == best_by)
+    cluster = coords[in_best]
+    if cluster.shape[0] == 0:
+        cx = float(np.mean(coords[:, 0]))
+        cy = float(np.mean(coords[:, 1]))
+        return cy, cx, f"mean_cell_points_empty_bestbin_bin{bin_m:.2f}"
+
+    cx = float(np.mean(cluster[:, 0]))
+    cy = float(np.mean(cluster[:, 1]))
+    density = float(cluster.shape[0]) / (bin_m * bin_m)
+    return cy, cx, f"densest_bin_centroid_bin{bin_m:.2f}_density{density:.6f}"
+
+
 # GHOST.algorithms.grid: Core GHOST algorithm implementation
 class GridHomeDetector:
     """
@@ -126,15 +196,35 @@ class GridHomeDetector:
         # Sort by stay_time, then num_nights, then num_points
         stats_df = stats_df.sort_values(by=['stay_time', 'num_nights', 'num_points'], ascending=False)
         best = stats_df.iloc[0]
-        prj_home_lat, prj_home_lon = best['LAT_Grid'], best['LON_Grid']
+
+        # winning cell center in projected coords
+        prj_cell_lat, prj_cell_lon = float(best['LAT_Grid']), float(best['LON_Grid'])
+
+        # densest bin refinement inside winning cell
+        prj_home_lat, prj_home_lon, method = densest_bin_centroid(
+            df_sel=df,
+            latg=prj_cell_lat,
+            longg=prj_cell_lon,
+            grid_m=float(self.grid_size),
+        )
+
+        # fallback to original grid cell center if densest method failed
+        if np.isfinite(prj_home_lat) and np.isfinite(prj_home_lon):
+            refine_method = method
+            prj_final_lat, prj_final_lon = prj_home_lat, prj_home_lon
+        else:
+            refine_method = "grid_centroid"
+            prj_final_lat, prj_final_lon = prj_cell_lat, prj_cell_lon
+
         transformer = Transformer.from_crs(f"epsg:{self.epsg_out}", f"epsg:{self.epsg_in}", always_xy=True)
-        home_lon, home_lat = transformer.transform(prj_home_lon, prj_home_lat)
+        home_lon, home_lat = transformer.transform(float(prj_final_lon), float(prj_final_lat))
         return home_lat, home_lon, {
             'num_nights': int(best['num_nights']),
             'num_points': int(best['num_points']),
             'stay_time': float(best['stay_time']),
-            'prj_lat': float(prj_home_lat),
-            'prj_lon': float(prj_home_lon)
+            'prj_lat': float(prj_final_lat),
+            'prj_lon': float(prj_final_lon),
+            'method': refine_method,
         }
 
 def grid_based_batch(gdf, grid_size=20, night_start=22, night_end=6, user_id_col='user_id', epsg_in=4326, epsg_out=32617):

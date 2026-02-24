@@ -21,7 +21,7 @@ This project is an open-source, modular Python package for detecting home locati
 
 This package supports batch processing for multiple users using the GHOST algorithm:
 - **Input:** A folder of GPX files (one per user, filename = user ID) or a CSV file with a `user_id` column.
-- **Output:** A DataFrame or CSV with one row per user, including their inferred home location and all stats (e.g., stay_time, num_nights, inferred_from).
+- **Output:** A DataFrame or CSV with one row per user, including their inferred home location and all stats (e.g., `stay_time`, `num_nights`, `inferred_from`, `method`, `prj_lat`, `prj_lon`).
 - **Automatic:** Batch mode is triggered automatically if your input contains multiple users.
 
 ## Command-Line Interface (CLI)
@@ -57,8 +57,15 @@ python -m ghost.cli detect --input-gpx data_folder/ --user-id-column user_id
 - Output and messages are adjusted accordingly.
 
 **Batch Output:**
-- When running in batch mode, the CLI will output a CSV with one row per user, including all stats (e.g., user_id, lat, lon, stay_time, num_nights, inferred_from).
+- When running in batch mode, the CLI will output a CSV with one row per user, including all stats (e.g., `user_id`, `lat`, `lon`, `stay_time`, `num_nights`, `inferred_from`, `method`, `prj_lat`, `prj_lon`).
 - The CLI output will indicate batch mode and display user IDs.
+
+## Algorithm Notes
+
+- GHOST first selects the winning grid cell using the standard hierarchy: maximum `stay_time`, then `num_nights`, then `num_points`.
+- The final home point is then refined inside that winning cell using a **densest sub-bin centroid** strategy.
+- If refinement cannot produce a finite point, GHOST falls back to the winning grid-cell center.
+- The `method` field in results indicates how the final projected point was produced (e.g., `densest_bin_centroid_*`, `mean_cell_points_*`, or `grid_centroid`).
 
 **Summary Table:**
 

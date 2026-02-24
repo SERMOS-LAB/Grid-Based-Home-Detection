@@ -11,7 +11,8 @@ A modular, open-source Python package for detecting home locations from mobile G
 Features
 --------
 - GHOST algorithm: grid-based home detection with nighttime and weekend fallback
-- Stay-time calculation
+- Stay-time-based grid selection with hierarchical tie-breaks
+- Densest sub-bin centroid refinement within the winning grid cell
 - Batch and single-user support
 - Flexible config and CLI
 - Extensible for benchmarking (DBSCAN, KMeans++)
@@ -20,7 +21,7 @@ Features
 Batch Processing and Validation
 -------------------------------
 - Batch mode is triggered automatically when your input is a folder of GPX files (one per user) or a CSV with a user_id column.
-- The CLI and Python API output one row per user with all stats (lat, lon, stay_time, inferred_from, etc.).
+- The CLI and Python API output one row per user with all stats (lat, lon, stay_time, inferred_from, method, prj_lat, prj_lon, etc.).
 - The validate command prints per-user errors (in meters) and a summary of batch accuracy metrics when multiple users are present.
 - For single-user, all commands work as expected.
 
